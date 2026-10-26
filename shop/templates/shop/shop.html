@@ -1,0 +1,269 @@
+{% extends 'shop/basic.html' %}
+{% load static %}
+
+{% block body %}
+
+<style>
+/* Enable smooth scrolling across the entire page */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Product Card setup - Modern Flex Architecture */
+.product-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* Fully Responsive Image Container */
+.product-card-img-wrapper {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    overflow: hidden;
+    padding: 0px;
+}
+
+.product-card-img-wrapper a {
+    width: 100%;
+    height: 100%;
+    display: flex;
+}
+
+.product-card-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Stretches edge-to-edge to fill width and height completely */
+    display: block;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.product-card-img-wrapper img:hover {
+    transform: scale(1.03);
+}
+
+/* Device-specific sizing: PC untouched, Mobile & Tab scaled to 999x1333 (3:4 ratio) */
+@media (min-width: 1200px) {
+    .product-card-img-wrapper { height: 420px; } /* Desktop/Laptop view unchanged */
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+    .product-card-img-wrapper {
+        height: auto;
+        aspect-ratio: 999 / 1333; /* Exact proportional height matching 999x1333 for tablets */
+    }
+}
+
+@media (max-width: 767px) {
+    .product-card-img-wrapper {
+        height: auto;
+        aspect-ratio: 999 / 1333; /* Exact proportional height matching 999x1333 for mobile */
+    }
+}
+
+/* HERO BANNER CSS */
+.kids-hero-container {
+    position: relative;
+    width: 100%;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+}
+
+.kids-hero-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: center;
+}
+
+.kids-hero-collage {
+    padding: 20px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.kids-hero-img-box {
+    position: relative;
+    width: 100%;
+    max-height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.kids-hero-img-box img {
+    max-width: 100%;
+    max-height: 400px;
+    width: auto;
+    height: auto;
+    object-fit: contain; /* Ensures the whole banner image is visible without cropping */
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.kids-hero-img-box:hover img {
+    transform: scale(1.02);
+}
+
+.kids-hero-content {
+    padding: 40px 40px 40px 20px;
+    text-align: left;
+    color: #2d3436;
+}
+
+.kids-hero-badge {
+    display: inline-block;
+    background-color: #ff6b81;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.kids-hero-title {
+    font-size: 36px;
+    font-weight: 800;
+    color: #2d3436;
+    margin: 0 0 16px 0;
+    line-height: 1.25;
+}
+
+.kids-hero-subtitle {
+    font-size: 17px;
+    line-height: 1.6;
+    color: #636e72;
+    margin: 0 0 20px 0;
+}
+
+.kids-hero-btn {
+    display: inline-block;
+    background-color: #2ed573;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 12px 30px;
+    text-decoration: none;
+    border-radius: 30px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3);
+}
+
+.kids-hero-btn:hover {
+    background-color: #26af5f;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+/* RESPONSIVE MEDIA QUERIES FOR HERO BANNER */
+@media (max-width: 991px) {
+    .kids-hero-grid { grid-template-columns: 1fr; }
+    .kids-hero-content { padding: 30px 25px; text-align: center; }
+    .kids-hero-img-box img { max-height: 320px; }
+}
+
+@media (max-width: 576px) {
+    .kids-hero-title { font-size: 24px; }
+    .kids-hero-subtitle { font-size: 15px; }
+    .kids-hero-img-box img { max-height: 250px; }
+}
+</style>
+
+<!-- HERO BANNER HTML -->
+<section class="kids-hero-container">
+  <div class="kids-hero-grid">
+    <div class="kids-hero-collage">
+      <!-- Featured Admin-Managed Banner Image with Fallback -->
+      <div class="kids-hero-img-box">
+        {% if banner %}
+            <img src="{{ banner.image.url }}" alt="{{ banner.title }}" class="img-fluid rounded shadow-sm" loading="lazy">
+        {% else %}
+            <img src="https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?q=80&w=800&auto=format&fit=crop" alt="Default Banner" class="img-fluid rounded shadow-sm" loading="lazy">
+        {% endif %}
+      </div>
+    </div>
+    <div class="kids-hero-content">
+      <span class="kids-hero-badge">Ages 0 - 14 Years</span>
+      <h5>Romina Creation's best Stylish dresses for Little Adventures</h5>
+      <p class="kids-hero-subtitle">
+Discover soft, trendy stitched frocks, party dresses, and traditional shalwar kameez built for play and celebrations.</p>
+
+      <!-- Button placed right beneath the intro text -->
+      <div class="mb-3">
+          <a href="#collection-start" class="kids-hero-btn">Visit Our Collection</a>
+      </div>
+
+      <div style="font-size: 15px; margin-top: 15px; color: #636e72;">
+         انتہائی نرم، آرام دہ اور جدید ڈیزائن کے سلے سلائے فراکس، شاندار پارٹی ڈریسز اور روایتی شلوار قمیض۔
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS GRID SECTION with scroll target ID -->
+<div id="collection-start" class="container-fluid px-2 px-md-4 pt-2">
+    {% for product_groups, category in allProds %}
+    <div id="{{ category|slugify }}" class="category-section mb-4">
+        <h5 class="category-title my-2">({{ category }})</h5>
+        <div class="row row-cols-2 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-2 g-md-3">
+            {% for group in product_groups %}
+                {% for item in group %}
+                    <div class="col">
+                        <div class="product-card h-100">
+                            <div class="product-card-img-wrapper">
+                                <a href="/shop/products/{{ item.product_id }}/">
+                                    <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.product_name }}" loading="lazy">
+                                </a>
+                            </div>
+                            <div class="product-card-body p-3">
+                                <div>
+                                    <h6 class="product-title text-truncate" id="namepr{{ item.product_id }}">{{ item.product_name }}</h6>
+                                    <h6 class="product-price text-danger fw-bold" id="pricepr{{ item.product_id }}">Rs.{{ item.price }}/-</h6>
+                                </div>
+                                <div class="d-flex flex-column gap-1 mt-2">
+                                    <span id="divpr{{ item.product_id }}" class="divpr w-100" data-id="pr{{ item.product_id }}">
+                                        <button id="pr{{ item.product_id }}"
+                                                data-name="{{ item.product_name }}"
+                                                data-price="{{ item.price }}"
+                                                class="btn btn-primary btn-sm cart w-100">Add to Cart</button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block js %}
+{% endblock %}

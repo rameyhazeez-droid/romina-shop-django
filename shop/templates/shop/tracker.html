@@ -1,0 +1,143 @@
+{% extends 'shop/basic.html' %}
+
+{% block title %} Track Your Order {% endblock %}
+
+{% block CSS %}
+<style>
+    /* Global fallback style overrides */
+    input, .form-control {
+        color: #000000 !important;
+        background-color: #ffffff !important;
+    }
+    input:focus, .form-control:focus {
+        color: #000000 !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25) !important;
+    }
+    .btn-submit {
+        background-color: #198754;
+        color: white;
+        border: none;
+        padding: 12px 16px;
+        border-radius: 6px;
+        font-weight: bold;
+        width: 100%;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .btn-submit:hover {
+        background-color: #146c43;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container my-5" style="max-width: 700px;">
+    <h2 class="text-center mb-4 fw-bold">Track Your Order</h2>
+    <p class="text-center text-muted mb-4">Enter your Order ID and Email address to view your order status and items.</p>
+
+    <!-- Tracking Form -->
+    <form method="POST" action="/shop/tracker/" id="trackerForm">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label for="orderId" class="form-label fw-semibold">Order ID</label>
+            <input type="text" class="form-control" id="orderId" name="orderId" required placeholder="Enter your Order ID" style="color: #000000 !important; background-color: #ffffff !important;">
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label fw-semibold">Email Address</label>
+            <input type="email" class="form-control" id="email" name="email" required placeholder="john@example.com" style="color: #000000 !important; background-color: #ffffff !important;">
+        </div>
+
+        <button type="submit" class="btn-submit mt-2">Track Your Order</button>
+    </form>
+
+    <hr class="my-5">
+
+    <!-- Order Status Updates Display Section -->
+    <div class="mb-4">
+        <h4 class="fw-bold mb-3">Your Current Order Status</h4>
+        <ul class="list-group" id="citems">
+            <li class="list-group-item text-muted">Enter your Order ID and Email above and click "Track Your Order" to check your status.</li>
+
+        </ul>
+    </div>
+
+    <!-- Order Items Summary Display Section -->
+    <div class="mb-4">
+        <h4 class="fw-bold mb-3">Your Order Details</h4>
+        <ul class="list-group" id="pitems">
+
+            <!-- Order products will be listed here -->
+        </ul>
+    </div>
+</div> <!-- End .container -->
+{% endblock %}
+
+{% block js %}
+<!-- Ensure jQuery is loaded for AJAX request -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$('#trackerForm').submit(function(event) {
+    event.preventDefault();
+
+    // Clear existing results
+    $('#citems').empty();
+    $('#pitems').empty();
+
+var formData = {
+    'orderId': $('input[name=orderId]').val(),
+    'email': $('input[name=email]').val(),
+    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+};
+
+    $.ajax({
+        type: 'POST',
+        url: '/shop/tracker/',
+        data: formData,
+        encode: true
+    })
+    .done(function(data) {
+        // Parse data if it is returned as a JSON string
+        if (typeof data === 'string') {
+            data = JSON.parse(data);
+        }
+
+        if (data.status === 'success') {
+            let updates = data.updates;
+            if (updates && updates.length > 0) {
+                for (let i = 0; i < updates.length; i++) {
+                    let text = updates[i]['text'];
+                    let time = updates[i]['time'];
+                    let mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${text}
+                                    <span class="badge bg-primary rounded-pill">${time}</span>
+                                </li>`;
+                    $('#citems').append(mystr);
+                }
+            } else {
+                $('#citems').append(`<li class="list-group-item">No updates available yet.</li>`);
+            }
+
+            // Parse itemsJson if stored as a string
+            let cart = (typeof data.itemsJson === 'string') ? JSON.parse(data.itemsJson) : data.itemsJson;
+            for (let item in cart) {
+                let name = cart[item][1];
+                let qty = cart[item][0];
+                let mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                                ${name}
+                                <span class="badge bg-secondary rounded-pill">Qty: ${qty}</span>
+                            </li>`;
+                $('#pitems').append(mystr);
+            }
+        } else {
+            let mystr = `<li class="list-group-item list-group-item-danger">
+                            Sorry, we could not find an order with that ID and Email combination. Please check your details and try again.
+                        </li>`;
+            $('#citems').append(mystr);
+        }
+    });
+});
+</script>
+{% endblock %}

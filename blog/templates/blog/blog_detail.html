@@ -1,0 +1,92 @@
+{% extends 'shop/basic.html' %}
+
+{% block title %} Blog Post {% endblock %}
+
+{% block body %}
+<header class="hero-section">
+    <h1>Read most recent blogs here:</h1>
+</header>
+
+<div class="container my-4">
+    {% for post in myposts %}
+        <div class="blog-post mb-4">
+            <h2 class="fw-bolder mb-1">{{ post.title }}</h2>
+
+            <div class="text-muted mb-2">
+                <small>Published on: {{ post.pub_date }}</small>
+            </div>
+
+            <h3>Heading 01</h3>
+            <div class="fs-5 mb-4 ps-3">
+                <p>{{ post.head0 }}</p>
+            </div>
+
+            <h3>Heading 02</h3>
+            <div class="fs-5 mb-4 ps-3">
+                <p>{{ post.head1 }}</p>
+            </div>
+
+            <h3>Heading 03</h3>
+            <div class="fs-5 mb-4 ps-3">
+                <p>{{ post.head2 }}</p>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 my-2">
+                <!-- Facebook Share Button -->
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}"
+                   onclick="window.open(this.href, 'facebook-share-dialog', 'width=626,height=436'); return false;"
+                   class="btn btn-sm btn-primary py-1 px-2">
+                    <i class="fab fa-facebook-f me-1"></i> Share with facebook
+                </a>
+
+                <!-- Like Button -->
+                <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2 like-btn">
+                    <i class="far fa-heart me-1 like-icon"></i> Like <span class="like-count">0</span>
+                </button>
+            </div>
+
+            <!-- Go Back Button -->
+            <a href="/blog/blog_home/{{ post.post }}" class="btn btn-sm btn-primary d-inline-block">Go Back</a>
+        </div>
+
+        <br><br>
+    {% endfor %}
+</div>
+{% endblock %} <!-- END OF BODY BLOCK -->
+
+<!-- JS BLOCK (Must be placed outside block body) -->
+{% block js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.like-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const icon = this.querySelector('.like-icon');
+                const countSpan = this.querySelector('.like-count');
+                let count = parseInt(countSpan.textContent, 10) || 0;
+
+                const isLiked = icon.classList.contains('fas');
+
+                if (isLiked) {
+                    // Toggle off (Unlike)
+                    icon.classList.remove('fas');
+                    icon.classList.add('far');
+                    this.classList.remove('btn-danger', 'text-white');
+                    this.classList.add('btn-outline-danger');
+
+                    // Decrease count
+                    countSpan.textContent = Math.max(0, count - 1);
+                } else {
+                    // Toggle on (Like)
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
+                    this.classList.remove('btn-outline-danger');
+                    this.classList.add('btn-danger', 'text-white');
+
+                    // Increase count
+                    countSpan.textContent = count + 1;
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

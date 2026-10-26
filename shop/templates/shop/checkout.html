@@ -1,0 +1,212 @@
+{% extends 'shop/basic.html' %}
+{% block title %} Check Out {% endblock %}
+
+{% block body %}
+<div class="container my-4">
+    <h1 class="text-center mb-5 fw-bold">Express Checkout</h1>
+
+    <form method="POST" action="{% url 'checkout' %}" id="checkoutForm">
+        {% csrf_token %}
+        <input type="hidden" name="itemsJson" id="itemsJson">
+        <input type="hidden" name="amount" id="amount">
+
+        <div class="row g-4">
+            <!-- Review Cart -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="card h-100 shadow-sm border-0 bg-light">
+                    <div class="card-body d-flex flex-column">
+                        <h4 class="fw-bold mb-3 text-center border-bottom pb-2">1. Review Cart</h4>
+                        <div class="flex-grow-1">
+                            <ul class="list-group list-group-flush mb-3" id="items"></ul>
+                            <div id="checkout-items"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Billing Address -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h4 class="fw-bold mb-3 text-center border-bottom pb-2">2. Billing Address</h4>
+                        <div class="mb-3">
+                            <label for="name" class="form-label fw-semibold">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required placeholder="John">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-semibold">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" required placeholder="john@example.com">
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label fw-semibold">Address</label>
+                            <input type="text" class="form-control" id="address" name="address" required placeholder="1234 Main St">
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label fw-semibold">Phone</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" required placeholder="03001234567">
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-7 mb-3">
+                                <label for="city" class="form-label fw-semibold">City</label>
+                                <input type="text" class="form-control" id="city" name="city" required placeholder="Lahore">
+                            </div>
+                            <div class="col-5 mb-3">
+                                <label for="zip_code" class="form-label fw-semibold">Zip Code</label>
+                                <input type="text" class="form-control" id="zip_code" name="zip_code" required placeholder="54000">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Method (Expanded to cover the rest of the left side width) -->
+            <div class="col-12 col-md-12 col-lg-6">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h4 class="fw-bold mb-3 text-center border-bottom pb-2">Payment Method</h4>
+
+                        <!-- Radio Options -->
+                        <div class="mb-3">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="paymentMethod" id="codRadio" value="COD" required>
+                                <label class="form-check-label fw-semibold" for="codRadio">
+                                    Cash on Delivery (COD)
+                                </label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="paymentMethod" id="bankRadio" value="Bank" required>
+                                <label class="form-check-label fw-semibold" for="bankRadio">
+                                    Payment in Bank Account
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Content Box for COD -->
+                        <div id="codText" class="payment-details p-3 bg-light rounded mb-3" style="display: none;">
+                            <p class="mb-0 text-muted" style="font-size: 0.95rem; line-height: 1.5;">
+                                1.  Every item is made specially for you based on your order.
+
+                                2.  We pay close attention to detail to make sure it looks unique and special.
+
+                                3.  You need to pay a 50% advance payment to confirm your order.
+
+                                4.  After confirmation, our team member will contact you personally to help you with the advance payment.
+                                ہر چیز خاص طور پر آپ کے آرڈر کے مطابق بنائی جاتی ہے۔
+
+ہم باریکی پر خاص توجہ دیتے ہیں تاکہ یہ منفرد اور خاص نظر آئے۔
+
+اپنے آرڈر کی تصدیق کے لیے آپ کو 50 فیصد پیشگی ادائیگی (advance payment) کرنی ہوگی۔
+
+تصدیق کے بعد، ہماری ٹیم کا کوئی فرد پیشگی ادائیگی میں آپ کی مدد کے لیے ذاتی طور پر آپ سے رابطہ کرے گا۔                              
+                            </p>
+                        </div>
+
+                        <!-- Dynamic Content Box for Bank Account -->
+                        <div id="bankText" class="payment-details p-3 bg-light rounded mb-3" style="display: none;">
+                            <p class="mb-0 text-muted" style="font-size: 0.95rem; line-height: 1.5;">
+                                Kindly make your payment directly into our bank account. Once the transfer is complete, please share a screenshot of the transaction along with your order ID via WhatsApp.
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Place Order Button -->
+            <div class="col-12 mt-4 text-center">
+                <button type="submit" class="btn btn-primary btn-lg px-5">Place Order</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let cart = {};
+    if (localStorage.getItem('cart')) {
+        try { cart = JSON.parse(localStorage.getItem('cart')) || {}; } catch (e) { cart = {}; }
+    }
+
+    let totalItems = 0;
+    for (let item in cart) {
+        let qty = Array.isArray(cart[item]) ? cart[item][0] : cart[item];
+        totalItems += parseInt(qty) || 0;
+    }
+    const cartBadge = document.getElementById('Cart') || document.getElementById('cart');
+    if (cartBadge) cartBadge.innerText = totalItems;
+
+    const cartContainer = document.getElementById('checkout-items');
+    let grandTotal = 0;
+
+    if (cartContainer) {
+        if (Object.keys(cart).length === 0) {
+            cartContainer.innerHTML = `<p class="text-muted text-center my-3">Your cart is empty.</p>`;
+        } else {
+            let totalPrice = 0;
+            let listHTML = '';
+            for (let item in cart) {
+                let qty = Array.isArray(cart[item]) ? cart[item][0] : 1;
+                let name = Array.isArray(cart[item]) ? cart[item][1] : 'Product';
+                let itemPrice = Array.isArray(cart[item]) ? parseFloat(cart[item][2]) || 0 : 0;
+                let subtotal = qty * itemPrice;
+                totalPrice += subtotal;
+
+                listHTML += `
+                    <div class="order-item d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-truncate me-2" style="max-width: 140px;">${name} <br><small class="text-muted">(Rs. ${itemPrice.toFixed(2)} each)</small></span>
+                        <div class="text-nowrap">
+                            <span class="badge bg-primary">x${qty}</span>
+                            <span class="ms-2 fw-semibold">Rs. ${subtotal.toFixed(2)}</span>
+                        </div>
+                    </div>`;
+            }
+
+            let deliveryCost = 250.00;
+            grandTotal = totalPrice + deliveryCost;
+
+            listHTML += `
+                <hr class="my-2">
+                <div class="order-item d-flex justify-content-between mb-1"><span>Subtotal</span><div>Rs. ${totalPrice.toFixed(2)}</div></div>
+                <div class="order-item d-flex justify-content-between mb-1"><span>Delivery Charges</span><div>Rs. ${deliveryCost.DeliveryCost || deliveryCost.toFixed(2)}</div></div>
+                <div class="total-row d-flex justify-content-between fw-bold text-dark mt-2 fs-6"><span>Total Amount</span><span>Rs. ${grandTotal.toFixed(2)}</span></div>`;
+
+            cartContainer.innerHTML = listHTML;
+        }
+    }
+
+    // Toggle Payment Method Text based on selection
+    const codRadio = document.getElementById('codRadio');
+    const bankRadio = document.getElementById('bankRadio');
+    const codText = document.getElementById('codText');
+    const bankText = document.getElementById('bankText');
+
+    function updatePaymentDetails() {
+        if (codRadio && codRadio.checked) {
+            if(codText) codText.style.display = 'block';
+            if(bankText) bankText.style.display = 'none';
+        } else if (bankRadio && bankRadio.checked) {
+            if(codText) codText.style.display = 'none';
+            if(bankText) bankText.style.display = 'block';
+        }
+    }
+
+    if (codRadio) codRadio.addEventListener('change', updatePaymentDetails);
+    if (bankRadio) bankRadio.addEventListener('change', updatePaymentDetails);
+
+    const checkoutForm = document.getElementById('checkoutForm');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', function(e) {
+            if (Object.keys(cart).length === 0) {
+                alert("Your cart is empty!");
+                e.preventDefault();
+                return false;
+            }
+            document.getElementById('itemsJson').value = JSON.stringify(cart);
+            document.getElementById('amount').value = grandTotal.toFixed(2);
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends 'shop/basic.html' %}
+
+{% block title %} Blog {% endblock %}
+
+{% block body %}
+<style>
+    /* Main wrapper to stack elements vertically */
+    .page-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 80vh;
+        width: 100%;
+        gap: 20px;
+        padding: 20px 0;
+    }
+
+    .hero-section {
+        background-color: #1a1a1a;
+        color: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        text-align: center;
+        width: 100%;
+        max-width: 320px;
+    }
+
+    .hero-section h1 {
+        color: #ffffff;
+        margin-bottom: 8px;
+        font-size: 1.8rem;
+    }
+
+    .hero-section p {
+        color: #cccccc;
+        font-size: 0.9rem;
+    }
+
+    /* Container layout */
+    .blog-container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 0 20px;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    /* Card wrapper */
+    .blog-card {
+        background: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .blog-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Content typography */
+    .blog-content {
+        padding: 24px;
+    }
+
+    .blog-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-bottom: 12px;
+    }
+
+    .blog-title {
+        margin: 0 0 12px 0;
+        font-size: 1.5rem;
+        line-height: 1.3;
+    }
+
+    .blog-title a {
+        color: #111827;
+        text-decoration: none;
+    }
+
+    .blog-title a:hover {
+        color: #2563eb;
+    }
+
+</style>
+
+<div class="page-wrapper">
+    <!-- Hero Header -->
+    <header class="hero-section">
+        <h1>Blog Page</h1>
+        <div>This is our main blog Article page</div>
+
+    </header>
+
+    <div class="container my-4">
+        <div class="row">
+            <!-- Main Content Area -->
+            <div class="col-lg-8">
+
+                <article class="blog-card mb-4 ps-3">
+                  {% for post in myposts %}
+    {% if post.thumbnail %}
+        <h5 class="fw-bolder mb-1"><h3>{{ post.title }}</h3></h5>
+        <img src="{{ post.thumbnail.url }}" alt="{{ post.title }}" class="img-fluid rounded shadow-sm" loading="lazy">
+    {% endif %}
+
+    <small>Published on: {{ post.pub_date }}</small>
+
+    <h3>Heading 01</h3>
+    <div class="fs-5 mb-4 ps-3">
+        <h5>{{ post.head0 }}</h5>
+    </div>
+
+    <!-- Read More Button -->
+    <div class="my-3">
+        <a href="/blog/blog_detail/{{ post.post }}" class="text-primary text-decoration-underline">Continue Reading...</a>
+    </div>
+
+{% empty %}
+    <p>No blog posts found.</p>
+{% endfor %}
+                </article>
+            </div>
+
+            <!-- Sidebar Area -->
+            <div class="col-lg-4">
+                <div class="card mb-4">
+                    <div class="card-header">About Our Success story</div>
+                    <div class="card-body">
+                       Our creative journey is led by our CEO and Founder, <strong>Aesha Khalid</strong>. Although she holds a Master's degree in Statistics, Aesha’s true childhood passion has always been fashion and clothing design. Driven by this love, she began sketching and crafting her own unique styles. Today, those original designs are not only loved locally in Bahawalpur, but have also found a home internationally across the <strong>USA, Australia, the UK, UAE, and KSA</strong>, winning the hearts of families worldwide.
+                    </div>
+                </div>
+
+
+        </div>
+    </div>
+</div>
+{% endblock %}

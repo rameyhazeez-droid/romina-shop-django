@@ -1,0 +1,50 @@
+{% extends 'shop/basic.html' %}
+{% block title %} Payment Status {% endblock %}
+
+{% block body %}
+<div class="container my-5 py-5 text-center">
+    {% if is_success %}
+        <div class="card shadow-sm border-0 max-width-500 mx-auto p-4">
+            <div class="card-body">
+                <div class="text-success mb-3 fs-1">✓</div>
+                <h2 class="text-success fw-bold mb-3">Payment Successful!</h2>
+                <p class="lead mb-1">Thank you for your purchase.</p>
+                <hr>
+                <div class="text-start">
+                    <p>
+                        <strong>Transaction Ref:</strong>
+                        {{ response.pp_TxnRefNo|default:response.transactionId|default:response.orderRefNum }}
+                    </p>
+                    <p>
+                        <strong>Amount Paid:</strong> PKR
+                        {{ response.pp_Amount|default:response.amount }}
+                    </p>
+                    <p>
+                        <strong>Order ID:</strong>
+                        {{ response.pp_BillReference|default:response.orderRefNum|default:id }}
+                    </p>
+                </div>
+                <a href="/shop/" class="btn btn-primary mt-3 px-4" id="clearCartBtn">Continue Shopping</a>
+            </div>
+        </div>
+    {% else %}
+        <div class="card shadow-sm border-0 max-width-500 mx-auto p-4">
+            <div class="card-body">
+                <div class="text-danger mb-3 fs-1">✕</div>
+                <h2 class="text-danger fw-bold mb-3">Payment Failed</h2>
+                <p class="text-muted mb-3">{{ message|default:response.responseDesc }}</p>
+                <a href="{% url 'checkout' %}" class="btn btn-warning mt-2 px-4">Try Checkout Again</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block js %}
+{% if is_success %}
+<script>
+    // Clear shopping cart on successful transaction
+    localStorage.removeItem('cart');
+</script>
+{% endif %}
+{% endblock %}

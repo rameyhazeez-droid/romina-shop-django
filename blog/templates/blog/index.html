@@ -1,0 +1,122 @@
+{% extends 'shop/basic.html' %}
+
+{% block title %} Blog {% endblock %}
+
+{% block body %}
+<style>
+    /* Main wrapper to stack elements vertically */
+    .page-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 80vh;
+        width: 100%;
+        gap: 20px;
+        padding: 20px 0;
+    }
+
+    .hero-section {
+        background-color: #1a1a1a;
+        color: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        text-align: center;
+        width: 100%;
+        max-width: 320px;
+    }
+
+    .hero-section h1 {
+        color: #ffffff;
+        margin-bottom: 8px;
+        font-size: 1.8rem;
+    }
+
+    .hero-section p {
+        color: #cccccc;
+        font-size: 0.9rem;
+    }
+
+    .container {
+        text-align: center;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        max-width: 320px;
+        width: 100%;
+    }
+
+    .container h1 {
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+    }
+
+    .button-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        width: fit-content;
+    }
+
+    /* Shop Button Styles */
+    .btn-shop {
+        background-color: #28a745;
+        color: #ffffff;
+    }
+
+    .btn-shop:hover {
+        background-color: #218838;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    }
+
+    /* Blog Button Styles */
+    .btn-blog {
+        background-color: #007bff;
+        color: #ffffff;
+    }
+
+    .btn-blog:hover {
+        background-color: #0069d9;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    }
+</style>
+
+<div class="page-wrapper">
+    <!-- Hero Header -->
+    <header class="hero-section">
+        <h1>Blog Page</h1>
+        <p>This is our main page</p>
+    </header>
+
+    <!-- Content Card -->
+    <div class="container">
+        <h1>Welcome to Our Site</h1>
+        <div class="button-group">
+    <a href="/shop" class="btn btn-shop">Go to Shop</a>
+    <a href="/blog_home" class="btn btn-blog">Go to Blog</a>
+</div>
+        <script>
+    // Only redirect if explicitly on the root path
+if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+    // Perform your redirect logic here
+}
+</script>
+    </div>
+</div>
+{% endblock %}

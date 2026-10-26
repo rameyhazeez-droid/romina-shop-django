@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Shop{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    {% block css %}
+    <style>
+        /* Core Reset & Base Layout */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        html, body {
+            width: 100% !important;
+            min-height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow-x: hidden !important;
+            background-color: #f8f9fa;
+        }
+
+        /* Full page wrapper to push footer down correctly */
+        .page-wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        /* Fixed Header Wrapper Container - Fixed on all pages */
+        .sticky-header-wrapper {
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            z-index: 1030;
+            width: 100%;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .main-content {
+            flex: 1 0 auto !important;
+            width: 100% !important;
+            max-width: 1200px !important;
+            margin: 0 auto !important;
+            padding: 1rem !important;
+            padding-top: 120px !important; /* Pushes content down so it stays visible below the fixed header */
+            box-sizing: border-box !important;
+        }
+
+        /* Product Cards Grid & Layout Fix */
+        .product-card {
+            width: 100% !important;
+            min-width: 0 !important;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #fff;
+            height: 100%;
+        }
+
+        /* Product Card Images */
+        .product-card img,
+        .card-img-top,
+        .product-card-img-wrapper img {
+            width: 100% !important;
+            height: 100% !important;
+            max-height: 280px !important;
+            aspect-ratio: 1 / 1 !important;
+            object-fit: contain !important;
+            object-position: center !important;
+            background-color: #f8f9fa !important;
+            padding: 4px !important;
+            display: block !important;
+            cursor: pointer;
+        }
+
+        @media (min-width: 768px) {
+            .product-card img,
+            .card-img-top,
+            .product-card-img-wrapper img {
+                max-height: 350px !important;
+            }
+        }
+
+        .product-card-body {
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .product-title {
+            font-size: 0.875rem;
+            line-height: 1.2;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .product-price {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .cart, .responsive-btn, .divpr .btn, .product-card .btn {
+            font-size: 0.8rem !important;
+            padding: 6px 10px !important;
+            min-height: 38px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            white-space: nowrap !important;
+        }
+
+        /* Category Section */
+        .category-section {
+            scroll-margin-top: 140px; /* Adjusted to account for fixed navbar height during anchor navigation */
+            margin-bottom: 2.5rem;
+            width: 100%;
+        }
+
+        .category-title {
+            font-size: clamp(1.1rem, 4vw, 1.5rem) !important;
+            font-weight: 700 !important;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            word-wrap: break-word;
+        }
+
+        /* Custom Submit Buttons */
+        button[type="submit"],
+        .btn-submit-green {
+            background-color: #198754 !important;
+            border-color: #198754 !important;
+            color: #ffffff !important;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 8px 24px;
+            border-radius: 6px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        button[type="submit"]:hover,
+        .btn-submit-green:hover {
+            background-color: #157347 !important;
+            border-color: #146c43 !important;
+            box-shadow: 0 4px 10px rgba(25, 135, 84, 0.3);
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            padding: 0.5rem 0.75rem !important;
+        }
+
+        .navbar-brand {
+            font-size: 0.95rem !important;
+            font-weight: 700;
+        }
+
+        .offcanvas-start {
+            width: 250px !important;
+        }
+
+        #popcart {
+            font-size: 0.75rem !important;
+            height: 32px !important;
+            padding: 2px 8px !important;
+            white-space: nowrap !important;
+        }
+
+        /* Global Form Inputs Styling */
+        body input, body select, body textarea, body .form-control, body .form-select {
+            color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
+            background-color: #ffffff !important;
+            opacity: 1 !important;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            padding: 9px 12px;
+        }
+
+        body input:focus, body select:focus, body textarea:focus, body .form-control:focus {
+            color: #000000 !important;
+            background-color: #ffffff !important;
+            outline: none !important;
+            box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25) !important;
+        }
+
+        ::placeholder {
+            color: #6c757d !important;
+            -webkit-text-fill-color: #6c757d !important;
+        }
+
+        /* Tracker & Contact Containers */
+        .tracker-container, .contact-container {
+            max-width: 750px;
+            margin: 2.5rem auto;
+            padding: 2rem;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Footer Styles */
+        footer.site-footer,
+        .site-footer {
+            width: 100% !important;
+            flex-shrink: 0 !important;
+            background-color: #1a1d20 !important;
+            color: #adb5bd !important;
+            font-size: 0.8rem;
+            margin-top: auto !important;
+            display: block !important;
+            clear: both !important;
+        }
+
+        .site-footer .container,
+        .site-footer .container-fluid {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding-left: 20px !important;
+            padding-right: 20px !important;
+        }
+
+        .site-footer .row {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            width: 100% !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+
+        .site-footer h5 {
+            color: #ffffff;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .site-footer a {
+            color: #ffffff !important;
+            text-decoration: none;
+            transition: color 0.2s ease-in-out;
+        }
+
+        .site-footer a:hover {
+            color: #198754 !important;
+        }
+
+        @media (max-width: 767.98px) {
+            .site-footer {
+                padding-top: 1rem !important;
+                padding-bottom: 0.75rem !important;
+                font-size: 0.72rem !important;
+            }
+
+            .site-footer h5 {
+                font-size: 0.78rem !important;
+                margin-bottom: 0.25rem !important;
+            }
+
+            .site-footer .row {
+                --bs-gutter-y: 0.5rem;
+            }
+
+            .site-footer ul {
+                gap: 2px !important;
+            }
+
+            .site-footer p,
+            .site-footer li {
+                font-size: 0.72rem !important;
+                line-height: 1.3 !important;
+            }
+
+            .site-footer .btn-sm {
+                font-size: 0.65rem !important;
+                padding: 1px 4px !important;
+            }
+
+            .site-footer hr {
+                margin: 0.5rem 0 !important;
+            }
+        }
+    </style>
+    {% endblock %}
+</head>
+
+<body>
+
+<div class="page-wrapper">
+
+    {% block navbar %}
+    <!-- Fixed Header Wrapper Containing Navbar & Quick Search Tags -->
+    <div class="sticky-header-wrapper">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-2">
+            <div class="container-fluid d-flex align-items-center justify-content-between p-0">
+
+                <!-- Brand Title -->
+                <a class="navbar-brand me-2 fw-bold text-white text-nowrap" href="/shop">
+                    RAMEY AWSOME CART
+                </a>
+
+                <!-- Controls Container -->
+                <div class="d-flex align-items-center gap-1 ms-auto">
+                    <form id="search-form" class="d-flex align-items-center m-0 flex-grow-1" action="/shop/search" method="get" style="max-width: 250px;">
+                        <input id="search-input"
+                               class="form-control form-control-sm me-1"
+                               type="search"
+                               name="search"
+                               list="search-suggestions"
+                               placeholder="Search Lawn, Party wear, Velvet..."
+                               aria-label="Search"
+                               autocomplete="off"
+                               style="width: 100%; height: 32px; font-size: 0.75rem; padding: 2px 8px;"/>
+
+                        <datalist id="search-suggestions">
+                            <option value="Princess Wearings">
+                            <option value="Foot Wear">
+                            <option value="Lawn">
+                            <option value="Party Wear">
+                            <option value="Embroidered">
+                            <option value="Fancy">
+                            <option value="Velvet">
+                        </datalist>
+
+                        <button class="btn btn-sm btn-outline-success text-nowrap px-2" type="submit" style="height: 32px; font-size: 0.75rem; padding: 2px 6px;">Search</button>
+                    </form>
+
+                    <button id="popcart" type="button" class="btn btn-primary fw-bold text-nowrap px-3 py-1"
+                            data-bs-container="body"
+                            data-bs-toggle="popover"
+                            data-bs-html="true"
+                            data-bs-placement="bottom"
+                            style="font-size: 0.9rem; height: 38px;">
+                        Cart (<span id="cart">0</span>)
+                    </button>
+
+                    <button class="navbar-toggler p-1 ms-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon" style="width: 1em; height: 1em;"></span>
+                    </button>
+                </div>
+
+                <!-- Offcanvas Side Drawer -->
+                <div class="offcanvas offcanvas-start bg-dark text-white" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+                    <div class="offcanvas-header border-bottom border-secondary">
+                        <h5 class="offcanvas-title text-white" id="offcanvasNavbarLabel">Menu</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <li class="nav-item"><a class="nav-link active" href="/shop">Home</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/shop/about">About Us</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/shop/tracker">Tracker</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/shop/contact">Contact Us</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/blog/">Blog</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </nav>
+
+        <!-- Quick Search Tags -->
+        <div class="bg-light border-bottom py-2 px-3 overflow-auto text-nowrap">
+            <span class="small text-muted me-2 fw-bold">Popular:</span>
+            <a href="/shop/#princess-wearings" class="badge bg-secondary text-decoration-none me-1">Princess Wearings</a>
+            <a href="/shop/#children-dresses" class="badge bg-secondary text-decoration-none me-1">children dresses</a>
+            <a href="/shop/#lawn" class="badge bg-secondary text-decoration-none me-1">Lawn</a>
+            <a href="/shop/#party-wear" class="badge bg-secondary text-decoration-none me-1">Party Wear</a>
+        </div>
+    </div>
+    {% endblock %}
+
+    <div class="main-content">
+        {% block body %}{% endblock %}
+    </div>
+
+    <!-- Footer Component -->
+    <footer class="site-footer pt-4 pb-3">
+        <div class="container">
+            <div class="row g-3">
+
+                <!-- Brand & Info Column -->
+                <div class="col-6 col-md-3">
+                    <h5 class="fw-bold text-white mb-2">RAMEY AWSOME CART</h5>
+                    <p class="small text-muted mb-2">
+                        Your one-stop destination for quality products and stitched children dresses.
+                    </p>
+                    <div class="d-flex align-items-center gap-1 flex-wrap">
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}"
+                           onclick="window.open(this.href, 'facebook-share-dialog', 'width=626,height=436'); return false;"
+                           class="btn btn-sm btn-primary py-0 px-2"
+                           title="Share on Facebook">
+                            <i class="fab fa-facebook-f me-1"></i> Facebook
+                        </a>
+
+                        <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ post.title|urlencode }}"
+                           onclick="window.open(this.href, 'twitter-share-dialog', 'width=600,height=400'); return false;"
+                           class="btn btn-sm btn-dark py-0 px-2"
+                           title="Share on Twitter">
+                            <i class="fab fa-x-twitter me-1"></i> Twitter
+                        </a>
+
+                        <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 like-btn" data-id="footer_like">
+                            <i class="far fa-heart me-1 like-icon"></i> Like <span class="like-count">0</span>
+                        </button>
+                    </div>
+                    <div class="mt-2">
+                        <a href="https://wa.me/923007053951" target="_blank" rel="noopener noreferrer" class="text-success small fw-bold">
+                            <i class="fab fa-whatsapp fs-6 me-1"></i> Chat on WhatsApp
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Links Column -->
+                <div class="col-6 col-md-3">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled d-flex flex-column gap-1 mb-0">
+                        <li><a href="/shop">Home</a></li>
+                        <li><a href="/shop/about">About Us</a></li>
+                        <li><a href="/shop/tracker">Tracker</a></li>
+                        <li><a href="/shop/contact">Contact Us</a></li>
+                        <li><a href="/blog/">Blog</a></li>
+                    </ul>
+                </div>
+
+                <!-- Customer Service Column -->
+                <div class="col-6 col-md-3">
+                    <h5>Customer Care</h5>
+                    <ul class="list-unstyled d-flex flex-column gap-1 mb-0">
+                        <li><a href="/shop/policy">Delivery, Return & Refund Policy</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact Info Column -->
+                <div class="col-6 col-md-3">
+                    <h5>Get In Touch</h5>
+                    <ul class="list-unstyled d-flex flex-column gap-1 small mb-0">
+                        <li class="d-flex align-items-center gap-1">
+                            <i class="fas fa-map-marker-alt text-success"></i> H.No.____ G-10, Islamabad
+                        </li>
+                        <li class="d-flex align-items-center gap-1">
+                            <i class="fas fa-phone text-success"></i> +92 0300-7053951
+                        </li>
+                        <li class="d-flex align-items-center gap-1">
+                            <i class="fas fa-envelope text-success"></i> support@rameycart.com
+                        </li>
+                        <li class="d-flex align-items-center gap-1">
+                            <i class="fab fa-whatsapp text-success"></i> WhatsApp: 0300-7053951
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <hr class="my-3 border-secondary opacity-25">
+
+            <!-- Copyright Bar -->
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+                <p class="mb-0 small text-muted">&copy; 2026 RAMEY AWSOME CART. All rights reserved.</p>
+                <div class="d-flex gap-3 fs-6 text-muted">
+                    <i class="fab fa-cc-visa" title="Visa"></i>
+                    <i class="fab fa-cc-mastercard" title="Mastercard"></i>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // 1. Cart State & Management
+    let cart = JSON.parse(localStorage.getItem("cart")) || {};
+
+    // Initialize Bootstrap Popover explicitly using data-bs-toggle
+    let popcartElement = document.getElementById("popcart");
+    if (popcartElement) {
+        new bootstrap.Popover(popcartElement, {
+            html: true,
+            sanitize: false,
+            trigger: "click", // Use native Bootstrap click toggle behavior
+            content: function () {
+                return getCartPopoverContent();
+            },
+            placement: "bottom"
+        });
+    }
+
+    document.addEventListener("click", function (e) {
+        let target = e.target;
+
+        // Add to Cart
+        if (target.classList.contains("cart")) {
+            let fullId = target.id;
+            let cleanId = fullId.replace("pr", "");
+            let nameElem = document.getElementById("namepr" + cleanId);
+            let name = target.getAttribute("data-name") || (nameElem ? nameElem.innerText.trim() : "");
+            let priceAttr = target.getAttribute("data-price");
+            let priceElem = document.getElementById("pricepr" + cleanId);
+            let price = priceAttr ? parseFloat(priceAttr) :
+                        (priceElem ? parseFloat(priceElem.innerText.replace(/[^\d.]/g, "")) : 0);
+            let cartKey = fullId.startsWith("pr") ? fullId : "pr" + cleanId;
+
+            if (cart[cartKey]) {
+                cart[cartKey][0] += 1;
+            } else {
+                cart[cartKey] = [1, name, price];
+            }
+            updateCart(true); // pass true to auto-open on add
+        }
+
+        // Plus Button (+)
+        if (target.classList.contains("plus")) {
+            let rawId = target.id.replace("plus", "");
+            let cartKey = rawId.startsWith("pr") ? rawId : "pr" + rawId;
+            if (cart[cartKey]) {
+                cart[cartKey][0]++;
+                updateCart(true);
+            }
+        }
+
+        // Minus Button (-)
+        if (target.classList.contains("minus")) {
+            let rawId = target.id.replace("minus", "");
+            let cartKey = rawId.startsWith("pr") ? rawId : "pr" + rawId;
+            if (cart[cartKey]) {
+                cart[cartKey][0]--;
+                if (cart[cartKey][0] <= 0) {
+                    delete cart[cartKey];
+                }
+                updateCart(true);
+            }
+        }
+
+        // Clear Cart
+        if (target.id === "clearCartBtn") {
+            cart = {};
+            localStorage.removeItem("cart");
+            updateCart(false);
+            let popcart = document.getElementById("popcart");
+            let instance = bootstrap.Popover.getInstance(popcart);
+            if (instance) instance.hide();
+        }
+
+        // Close Popover via Custom 'x' Button
+        if (target.id === "closePopoverBtn" || target.closest("#closePopoverBtn")) {
+            let popcart = document.getElementById("popcart");
+            let instance = bootstrap.Popover.getInstance(popcart);
+            if (instance) instance.hide();
+        }
+    });
+
+    function updateCart(autoShow = false) {
+        let totalQty = 0;
+
+        document.querySelectorAll(".divpr").forEach(function (div) {
+            let dataId = div.dataset.id;
+            let cleanId = dataId.replace("pr", "");
+
+            if (cart[dataId]) {
+                div.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-center gap-1 w-100">
+                        <button id="minus${dataId}" class="btn btn-primary btn-sm minus px-3">-</button>
+                        <span id="val${dataId}" class="mx-1 fw-bold fs-6">${cart[dataId][0]}</span>
+                        <button id="plus${dataId}" class="btn btn-primary btn-sm plus px-3">+</button>
+                    </div>
+                `;
+            } else {
+                let nameElem = document.getElementById("namepr" + cleanId);
+                let name = nameElem ? nameElem.innerText.trim() : "";
+                let existingBtn = div.querySelector("button");
+                let price = existingBtn && existingBtn.getAttribute("data-price")
+                            ? parseFloat(existingBtn.getAttribute("data-price"))
+                            : (cart[dataId] ? cart[dataId][2] : 0);
+
+                div.innerHTML = `
+                    <button id="${dataId}" data-name="${name}" data-price="${price}" class="btn btn-primary btn-sm cart w-100">
+                        Add to Cart
+                    </button>
+                `;
+            }
+        });
+
+        for (let item in cart) {
+            totalQty += cart[item][0];
+        }
+
+        let badge = document.getElementById("cart");
+        if (badge) {
+            badge.innerText = totalQty;
+        }
+
+        localStorage.setItem("cart", JSON.stringify(cart));
+
+        // Refresh popover content if active
+        let popcart = document.getElementById("popcart");
+        if (popcart) {
+            let instance = bootstrap.Popover.getInstance(popcart);
+            if (instance) {
+                instance.setContent({ '.popover-body': getCartPopoverContent() });
+                if (autoShow) {
+                    instance.show();
+                }
+            }
+        }
+    }
+
+    updateCart(false);
+
+    // 2. Footer Like Button Logic
+    const footerLikeBtn = document.querySelector('.site-footer .like-btn');
+    if (footerLikeBtn) {
+        const icon = footerLikeBtn.querySelector('.like-icon');
+        const countSpan = footerLikeBtn.querySelector('.like-count');
+        const buttonId = footerLikeBtn.getAttribute('data-id') || 'footer_like_main';
+
+        const savedState = localStorage.getItem(buttonId);
+        if (savedState) {
+            try {
+                const data = JSON.parse(savedState);
+                countSpan.textContent = data.count;
+                if (data.isLiked) {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
+                    footerLikeBtn.classList.remove('btn-outline-danger');
+                    footerLikeBtn.classList.add('btn-danger', 'text-white');
+                }
+            } catch (e) {
+                console.error('Error reading localStorage state', e);
+            }
+        }
+
+        footerLikeBtn.addEventListener('click', function () {
+            let count = parseInt(countSpan.textContent, 10) || 0;
+            const isCurrentlyLiked = icon.classList.contains('fas');
+
+            if (isCurrentlyLiked) {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                footerLikeBtn.classList.remove('btn-danger', 'text-white');
+                footerLikeBtn.classList.add('btn-outline-danger');
+                count = Math.max(0, count - 1);
+            } else {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                footerLikeBtn.classList.remove('btn-outline-danger');
+                footerLikeBtn.classList.add('btn-danger', 'text-white');
+                count += 1;
+            }
+
+            countSpan.textContent = count;
+            localStorage.setItem(buttonId, JSON.stringify({
+                isLiked: !isCurrentlyLiked,
+                count: count
+            }));
+        });
+    }
+
+    // 3. Search Suggestions & Category Auto-Jump Logic
+    const searchInput = document.getElementById("search-input");
+    const searchForm = document.getElementById("search-form");
+    const datalist = document.getElementById("search-suggestions");
+
+    const categoryMap = {
+        "Princess Wearings": "princess-wearings",
+        "children dresses": "children-dresses",
+        "Lawn": "lawn",
+        "Party Wear": "party-wear"
+    };
+
+    if (searchInput && searchForm && datalist) {
+        searchInput.addEventListener("input", function () {
+            const val = this.value.trim();
+
+            if (categoryMap[val]) {
+                window.location.href = `/shop/#${categoryMap[val]}`;
+                this.value = "";
+                return;
+            }
+
+            const validOptions = Array.from(datalist.options).map(opt => opt.value);
+            if (validOptions.includes(val)) {
+                searchForm.submit();
+            }
+        });
+    }
+});
+
+// Helper Function to Generate Cart Popover HTML Content
+function getCartPopoverContent() {
+    let cart = {};
+    try {
+        cart = JSON.parse(localStorage.getItem('cart')) || {};
+    } catch (e) {
+        cart = {};
+    }
+
+    let html = `<div>
+        <div class='d-flex justify-content-between align-items-center mb-2'>
+            <h6 class='mb-0 fw-bold'>Cart Items</h6>
+            <button id='closePopoverBtn' type='button' class='btn-close' aria-label='Close' style='font-size: 0.7rem;'></button>
+        </div>`;
+    let keys = Object.keys(cart);
+
+    if (keys.length === 0) {
+        html += "<p class='text-muted mb-0'>Your cart is empty!</p>";
+    } else {
+        let i = 1;
+        let hasValidItems = false;
+
+        for (let key of keys) {
+            let item = cart[key];
+            if (!item) continue;
+
+            let itemQty = Array.isArray(item) ? item[0] : (item.qty || item.quantity || 0);
+            let itemName = Array.isArray(item) ? item[1] : (item.name || item.title || "Product");
+            let itemPrice = Array.isArray(item) ? item[2] : (item.price || 0);
+
+            if (itemQty > 0) {
+                html += `<div class='small mb-1'><b>${i}.</b> ${itemName} × <b>${itemQty}</b> (Rs. ${itemPrice * itemQty})</div>`;
+                i++;
+                hasValidItems = true;
+            }
+        }
+
+        if (!hasValidItems) {
+            html += "<p class='text-muted mb-0'>Your cart is empty!</p>";
+        } else {
+            html += `
+                <div class="mt-3 d-grid gap-2">
+                    <a href="/shop/checkout/" class="btn btn-primary btn-sm">Checkout</a>
+                    <button id="clearCartBtn" class="btn btn-danger btn-sm">Clear Cart</button>
+                </div>
+            `;
+        }
+    }
+    html += "</div>";
+    return html;
+}
+</script>
+{% block js %}{% endblock %}
+</body>
+</html>

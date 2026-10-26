@@ -1,0 +1,93 @@
+{% extends 'shop/basic.html' %}
+{% load static %}
+
+{% block title %} About Us - Romina Creation {% endblock %}
+
+{% block body %}
+    <!-- Hero Header -->
+    <header class="hero-section">
+        <h1>About Our Store</h1>
+        <p>Providing high-quality products and an exceptional shopping experience since 2020.</p>
+    </header>
+
+    <!-- Mission / Story Section -->
+    <section class="section">
+        <div class="container">
+            <div class="about-grid">
+
+                <div class="about-text">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-12">
+
+                            <h2 class="text-center fw-bold mb-4" style="color: #800020;">About Romina Creation</h2>
+
+                            <p class="fs-5 text-muted text-center mb-5">
+                                Founded in 2020 on Facebook, <strong>Romina Creation</strong> started as a passion project and has blossomed into a trusted online destination for luxury children's wear.
+                            </p>
+
+                            <div class="card border-0 shadow-sm p-4 mb-4" style="background-color: #fffaf9; border-radius: 12px;">
+                                <p class="mb-0">
+                                    Our creative journey is led by our CEO and Founder, <strong>Aesha Khalid</strong>. Although she holds a Master's degree in Statistics, Aesha’s true childhood passion has always been fashion and clothing design. Driven by this love, she began sketching and crafting her own unique styles. Today, those original designs are not only loved locally in Bahawalpur, but have also found a home internationally across the <strong>USA, Australia, the UK, UAE, and KSA</strong>, winning the hearts of families worldwide.
+                                </p>
+                            </div>
+
+                            <h3 class="fw-bold mt-4 mb-3" style="color: #800020;">What We Offer</h3>
+                            <p>
+                                We design what looks beautiful, trendy, and entirely appropriate for little ones. Specializing in fancy and traditional wear for children aged <strong>0 to 14 years</strong>, we aim to turn your little girl into a real-life princess. Supported by a skilled and dedicated professional team, we ensure every stitch is a work of art.
+                            </p>
+
+                            <h3 class="fw-bold mt-4 mb-3" style="color: #800020;">Our Core Values</h3>
+                            <ul class="list-unstyled ps-2">
+                                <li class="mb-3">
+                                    <strong>Uncompromising Quality:</strong> We never compromise on fabric quality or stitching precision.
+                                </li>
+                                <li class="mb-3">
+                                    <strong>Customer First:</strong> Your complete satisfaction and happiness remain our highest priority at all times.
+                                </li>
+                                <li class="mb-3">
+                                    <strong>Trust & Transparency:</strong> We operate firmly on honesty, fair pricing, secure payment methods, and dedicated customer care.
+                                </li>
+                                <li class="mb-3">
+                                    <strong>Prompt Delivery:</strong> Our optimized order processing ensures your packages are safely dispatched without delays.
+                                </li>
+                            </ul>
+
+                            <div class="alert alert-light border text-center mt-4 p-4 shadow-sm" role="alert" style="background-color: #fcf4f4; border-color: #e6bcbc !important;">
+                                <p class="mb-0 fs-5" style="color: #800020;">
+                                    At <strong>Romina Creation</strong>, we strive to bring you a magical shopping experience—both online and offline—because you and your children deserve nothing but the best.
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+<div class="kids-hero-img-box">
+    {% if item and item.image %}
+        <img src="{{ item.image.url }}" alt="{{ item.title }}" class="img-fluid rounded shadow-sm" loading="lazy">
+    {% endif %}
+</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Values / Features -->
+    <section class="section" style="background-color: #ffffff;">
+        <div class="container">
+            <h2 class="section-title text-center mb-4">Why Choose Us</h2>
+            <div class="values-grid">
+                <div class="value-card">
+                    <h3>Fast Delivery</h3>
+                    <p>We ship quickly and efficiently so you can start enjoying your order without delays.</p>
+                </div>
+                <div class="value-card">
+                    <h3>Quality Guaranteed</h3>
+                    <p>Every product in our inventory goes through strict quality control checks.</p>
+                </div>
+                <div class="value-card">
+                    <h3>24/7 Support</h3>
+                    <p>Our dedicated support team is available around the clock to answer your queries.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

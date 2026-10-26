@@ -1,0 +1,11 @@
+# Environment variables
+ourawsomecart/.env
+
+# Local database
+db.sqlite3
+
+# Python cache and build files
+__pycache__/
+
+venv/
+env/
