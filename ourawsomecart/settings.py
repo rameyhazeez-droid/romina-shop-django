@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import dj_database_url
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
@@ -8,29 +9,59 @@ from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# 1. SECURITY CONFIGURATION (Fetched securely from .env)
-SECRET_KEY = config('SECRET_KEY')
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
-
-
+# # 1. SECURITY CONFIGURATION (Fetched securely from .env)
+# SECRET_KEY = config('SECRET_KEY')
+#
+# # SECURITY WARNING: don't run with debug turned on in production!
+# DEBUG = True
+# 1. SECURITY CONFIGURATION
+SECRET_KEY = os.environ.get('SECRET_KEY', config('SECRET_KEY', default='local-dev-key'))
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # 2. CLOUDINARY CONFIGURATION
+CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME', config('CLOUDINARY_CLOUD_NAME', default=''))
+API_KEY = os.environ.get('CLOUDINARY_API_KEY', config('CLOUDINARY_API_KEY', default=''))
+API_SECRET = os.environ.get('CLOUDINARY_API_SECRET', config('CLOUDINARY_API_SECRET', default=''))
+
 cloudinary.config(
-    cloud_name=config('CLOUDINARY_CLOUD_NAME'),
-    api_key=config('CLOUDINARY_API_KEY'),
-    api_secret=config('CLOUDINARY_API_SECRET'),
+    cloud_name=CLOUD_NAME,
+    api_key=API_KEY,
+    api_secret=API_SECRET,
     secure=True
 )
 
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': config('CLOUDINARY_API_KEY'),
-    'API_SECRET': config('CLOUDINARY_API_SECRET'),
+    'CLOUD_NAME': CLOUD_NAME,
+    'API_KEY': API_KEY,
+    'API_SECRET': API_SECRET,
 }
+
+
+
+# 1. Keep localhost so your app still runs perfectly fine on your computer
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+# 2. Automatically detect and add your live Render URL when deployed
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+
+
+#
+# # 2. CLOUDINARY CONFIGURATION
+# cloudinary.config(
+#     cloud_name=config('CLOUDINARY_CLOUD_NAME'),
+#     api_key=config('CLOUDINARY_API_KEY'),
+#     api_secret=config('CLOUDINARY_API_SECRET'),
+#     secure=True
+# )
+#
+# CLOUDINARY_STORAGE = {
+#     'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
+#     'API_KEY': config('CLOUDINARY_API_KEY'),
+#     'API_SECRET': config('CLOUDINARY_API_SECRET'),
+# }
 
 
 # 3. APPLICATION DEFINITION
@@ -81,7 +112,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ourawsomecart.wsgi.application'
 
 
+
 # 4. DATABASE
+# 1. Default local database for your laptop
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -89,11 +122,19 @@ DATABASES = {
     }
 }
 
+# 2. Automated switch to Render PostgreSQL when live
+if os.environ.get('DATABASE_URL'):
+    DATABASES['default'] = dj_database_url.config(
+        conn_max_age=600,
+        ssl_require=True
+    )
+
+
 
 # 5. PASSWORD VALIDATION
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.Centrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
@@ -108,6 +149,8 @@ USE_TZ = True
 
 # 7. STATIC & MEDIA FILES
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
