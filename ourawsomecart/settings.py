@@ -66,7 +66,7 @@ if RENDER_EXTERNAL_HOSTNAME:
 
 # 3. APPLICATION DEFINITION
 INSTALLED_APPS = [
-    'cloudinary_storage.apps.CloudinaryStorageConfig',  # <--- CHANGE THIS LINE HERE
+    'cloudinary_storage',
     'shop.apps.ShopConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     'cloudinary',
     'blog',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -160,7 +161,7 @@ STORAGES = {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        "BACKEND": "cloudinary_storage.storage.StaticCloudinaryStorage",
+        "BACKEND": "cloudinary_storage.storage.StaticHashedCloudinaryStorage",
     },
 }
 
