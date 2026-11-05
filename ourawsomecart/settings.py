@@ -161,11 +161,11 @@ STORAGES = {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        "BACKEND": "cloudinary_storage.storage.StaticHashedCloudinaryStorage",
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
-# Add this line exactly as it is below to satisfy the old library check:
-STATICFILES_STORAGE = "cloudinary_storage.storage.StaticCloudinaryStorage"
+
+
 
 
 # 8. JAZZCASH PAYMENT GATEWAY (Secured via .env)
