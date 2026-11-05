@@ -66,7 +66,7 @@ if RENDER_EXTERNAL_HOSTNAME:
 
 # 3. APPLICATION DEFINITION
 INSTALLED_APPS = [
-    'cloudinary_storage',  # Must be placed before django.contrib.staticfiles
+    'cloudinary_storage.apps.CloudinaryStorageConfig',  # <--- CHANGE THIS LINE HERE
     'shop.apps.ShopConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -153,6 +153,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
 
 STORAGES = {
     "default": {
