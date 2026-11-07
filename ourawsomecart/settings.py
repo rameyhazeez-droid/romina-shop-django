@@ -4,28 +4,21 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 from decouple import config
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# 1. SECURITY CONFIGURATION (Fetched securely from .env locally or Render Dashboard in production)
-# cast=str is a safe practice, and we use a local fallback if needed
+# 1. SECURITY CONFIGURATION
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-fallback-key-for-local-dev')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-# This automatically forces DEBUG to False on Render, but keeps it True locally
 DEBUG = config('DEBUG', default=True, cast=bool)
 if config('RENDER', default=False, cast=bool) or os.environ.get('RENDER'):
     DEBUG = False
 
-# Automatically add your unique Render domain to allowed hosts
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-else:
-    # Local development fallbacks
-    ALLOWED_HOSTS.extend(['localhost', '127.0.0.1'])
-
 
 # 2. CLOUDINARY CONFIGURATION
 cloudinary.config(
@@ -35,17 +28,15 @@ cloudinary.config(
     secure=True
 )
 
-
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
     'API_KEY': config('CLOUDINARY_API_KEY'),
     'API_SECRET': config('CLOUDINARY_API_SECRET'),
 }
 
-
 # 3. APPLICATION DEFINITION
 INSTALLED_APPS = [
-    'cloudinary_storage',  # Must be placed before django.contrib.staticfiles
+    'cloudinary_storage',  # Placed explicitly before staticfiles
     'shop.apps.ShopConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -59,7 +50,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Intercepts static assets early
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -87,7 +78,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ourawsomecart.wsgi.application'
 
-
 # 4. DATABASE
 DATABASES = {
     'default': {
@@ -96,15 +86,13 @@ DATABASES = {
     }
 }
 
-
 # 5. PASSWORD VALIDATION
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.Centrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
-
 
 # 6. INTERNATIONALIZATION & LOCALIZATION
 LANGUAGE_CODE = 'en-us'
@@ -112,23 +100,37 @@ TIME_ZONE = 'Asia/Karachi'
 USE_I18N = True
 USE_TZ = True
 
+# 7. STATIC & MEDIA FILES CONFIGURATION (Unified for Django 5.x)
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# 7. STATIC & MEDIA FILES
-STATIC_URL = 'static/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-STORAGES = {
-    "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-    },
-}
+if DEBUG:
+    # Local Development Storage Layout
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+else:
+    # Render Production Storage Layout
+    STORAGES = {
+        "default": {
+            "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        },
+    }
+    # Direct legacy string routing patch for internal django-cloudinary-storage code matching
+    STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticCloudinaryStorage'
 
-
-# 8. JAZZCASH PAYMENT GATEWAY (Secured via .env)
+# 8. JAZZCASH PAYMENT GATEWAY
 JAZZCASH_MERCHANT_ID = config('JAZZCASH_MERCHANT_ID', default='')
 JAZZCASH_PASSWORD = config('JAZZCASH_PASSWORD', default='')
 JAZZCASH_INTEGRITY_SALT = config('JAZZCASH_INTEGRITY_SALT', default='')
@@ -136,8 +138,7 @@ JAZZCASH_INTEGRITY_SALT = config('JAZZCASH_INTEGRITY_SALT', default='')
 JAZZCASH_URL = "http://127.0.0.1:8000/shop/mock-jazzcash-gateway/"
 JAZZCASH_RETURN_URL = "http://127.0.0.1:8000/shop/jazzcash-response/"
 
-
-# 9. EASYPAISA SANDBOX CREDENTIALS (Secured via .env)
+# 9. EASYPAISA SANDBOX CREDENTIALS
 EASYPAISA_STORE_ID = config('EASYPAISA_STORE_ID', default='')
 EASYPAISA_USERNAME = config('EASYPAISA_USERNAME', default='')
 EASYPAISA_PASSWORD = config('EASYPAISA_PASSWORD', default='')
@@ -146,28 +147,5 @@ EASYPAISA_HASH_KEY = config('EASYPAISA_HASH_KEY', default='')
 EASYPAISA_URL = "https://easypaystg.easypaisa.com.pk/easypay/Index.jsf"
 EASYPAISA_RETURN_URL = "http://127.0.0.1:8000/shop/easypaisa-response/"
 
-# 10. EMAIL CONFIGURATION (Console Backend for local testing)
+# 10. EMAIL CONFIGURATION
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-import os
-
-STATIC_URL = '/static/'
-
-if not DEBUG:
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-    # 1. Clear WhiteNoise configurations managed here
-    STORAGES = {
-        "default": {
-            "BACKEND": "django.core.files.storage.FileSystemStorage",
-        },
-        "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-            "OPTIONS": {
-                "manifest_strict": False,
-            },
-        },
-    }
-
-    # 2. Redirect the legacy target string specifically to the Cloudinary wrapper
-    STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticCloudinaryStorage'
