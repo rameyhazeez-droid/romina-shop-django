@@ -156,15 +156,18 @@ STATIC_URL = '/static/'
 if not DEBUG:
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-    # 1. Modern storage layout for Django 4.2 through 5.1
     STORAGES = {
         "default": {
             "BACKEND": "django.core.files.storage.FileSystemStorage",
         },
         "staticfiles": {
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+            "OPTIONS": {
+                "manifest_strict": False,  # This fixes the MissingFileError crash!
+            },
         },
     }
 
-    # 2. Legacy fallback patch needed specifically by django-cloudinary-storage
+    # Keep your previous patch line right under it
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
