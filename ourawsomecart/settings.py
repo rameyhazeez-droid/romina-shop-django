@@ -149,13 +149,14 @@ EASYPAISA_RETURN_URL = "http://127.0.0.1:8000/shop/easypaisa-response/"
 # 10. EMAIL CONFIGURATION (Console Backend for local testing)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-
+import os
 
 STATIC_URL = '/static/'
 
 if not DEBUG:
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+    # 1. Clear WhiteNoise configurations managed here
     STORAGES = {
         "default": {
             "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -163,11 +164,10 @@ if not DEBUG:
         "staticfiles": {
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
             "OPTIONS": {
-                "manifest_strict": False,  # This fixes the MissingFileError crash!
+                "manifest_strict": False,
             },
         },
     }
 
-    # Keep your previous patch line right under it
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
+    # 2. Redirect the legacy target string specifically to the Cloudinary wrapper
+    STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticCloudinaryStorage'
