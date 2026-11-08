@@ -36,21 +36,23 @@ CLOUDINARY_STORAGE = {
 
 # 3. APPLICATION DEFINITION
 INSTALLED_APPS = [
+    # 1. Core Django apps must load first
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.staticfiles',  # Move this UP!
 
-    # Cloudinary storage needs to override staticfiles, but load after core apps
-    'cloudinary_storage',
-    'django.contrib.staticfiles',
+    # 2. Third-party cloud storage extensions
+    'cloudinary_storage',           # Place this right after staticfiles
     'cloudinary',
 
-    # Your custom local apps go at the bottom
+    # 3. Your custom local apps go at the bottom
     'shop.apps.ShopConfig',
     'blog',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -124,7 +126,7 @@ if DEBUG:
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
         },
     }
-    else:
+else:
     # Render Production Storage Layout
     STORAGES = {
         "default": {
