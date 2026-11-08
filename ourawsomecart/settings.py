@@ -36,19 +36,16 @@ CLOUDINARY_STORAGE = {
 
 # 3. APPLICATION DEFINITION
 INSTALLED_APPS = [
-    # 1. Core Django apps must load first
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',  # Move this UP!
+    'django.contrib.staticfiles',  # LOAD CORE STATICFILES FIRST
 
-    # 2. Third-party cloud storage extensions
-    'cloudinary_storage',           # Place this right after staticfiles
+    'cloudinary_storage',           # Third-party storage tags load next
     'cloudinary',
 
-    # 3. Your custom local apps go at the bottom
     'shop.apps.ShopConfig',
     'blog',
 ]
@@ -133,11 +130,13 @@ else:
             "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
         },
         "staticfiles": {
-            "BACKEND": "whitenoise.storage.StaticFilesStorage",  # FIX: Changed from CompressedStaticFilesStorage
+            "BACKEND": "whitenoise.storage.StaticFilesStorage",
         },
     }
-    # Direct legacy string routing patch for internal django-cloudinary-storage code matching
-    STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'  # FIX: Changed from CompressedStaticFilesStorage
+
+    # THE DUO PATCH: Explicitly add legacy settings to stop django-cloudinary-storage from throwing 500 crashes
+    STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'  # CRITICAL ADDITION
 
 # 8. JAZZCASH PAYMENT GATEWAY
 JAZZCASH_MERCHANT_ID = config('JAZZCASH_MERCHANT_ID', default='')
