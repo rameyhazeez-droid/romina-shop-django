@@ -36,15 +36,19 @@ CLOUDINARY_STORAGE = {
 
 # 3. APPLICATION DEFINITION
 INSTALLED_APPS = [
-    'cloudinary_storage',  # Placed explicitly before staticfiles
-    'shop.apps.ShopConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+
+    # Cloudinary storage needs to override staticfiles, but load after core apps
+    'cloudinary_storage',
     'django.contrib.staticfiles',
     'cloudinary',
+
+    # Your custom local apps go at the bottom
+    'shop.apps.ShopConfig',
     'blog',
 ]
 
