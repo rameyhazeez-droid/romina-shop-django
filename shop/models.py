@@ -18,16 +18,15 @@ class Product(models.Model):
 
     # Note: Custom local cropping in the save method is removed because
     # Cloudinary handles cropping and optimization dynamically on-the-fly via URLs!
-
-
 class ProductImage(models.Model):
     product = models.ForeignKey(
-        Product, default=None, on_delete=models.CASCADE, related_name="images"
+        Product, on_delete=models.CASCADE, related_name="images"
     )
     image = CloudinaryField('image', folder='shop/images', default="")
 
     def __str__(self):
         return f"Image for {self.product.product_name}"
+
 
 
 class SiteBanner(models.Model):
