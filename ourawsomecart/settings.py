@@ -124,18 +124,18 @@ if DEBUG:
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
         },
     }
-else:
+    else:
     # Render Production Storage Layout
     STORAGES = {
         "default": {
             "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
         },
         "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+            "BACKEND": "whitenoise.storage.StaticFilesStorage",  # FIX: Changed from CompressedStaticFilesStorage
         },
     }
-    # FIX: Route the legacy string to WhiteNoise so it matches your STORAGES dict!
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+    # Direct legacy string routing patch for internal django-cloudinary-storage code matching
+    STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'  # FIX: Changed from CompressedStaticFilesStorage
 
 # 8. JAZZCASH PAYMENT GATEWAY
 JAZZCASH_MERCHANT_ID = config('JAZZCASH_MERCHANT_ID', default='')
