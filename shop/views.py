@@ -139,16 +139,22 @@ def tracker(request):
 
 
 def productView(request, myid):
-  # Safely fetch the product
-  product = Product.objects.filter(product_id=myid).first()
+    # Safely fetch the product
+    product = Product.objects.filter(product_id=myid).first()
 
-  # Safely grab related images only if the product exists, else return an empty list
-  related_images = product.images.all() if product else []
+    # Fallback checking for either 'images' or the default 'productimage_set'
+    if product:
+        if hasattr(product, 'images'):
+            related_images = product.images.all()
+        elif hasattr(product, 'productimage_set'):
+            related_images = product.productimage_set.all()
+        else:
+            related_images = []
+    else:
+        related_images = []
 
-  params = {'product': product, 'related_images': related_images}
-  return render(request, 'shop/prodView.html', params)
-
-
+    params = {'product': product, 'related_images': related_images}
+    return render(request, 'shop/prodView.html', params)
 
 def search(request):
   # Retrieve query parameter matching <input name="search">
