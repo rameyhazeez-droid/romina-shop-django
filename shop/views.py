@@ -1,3 +1,4 @@
+import re  # 1. CRITICAL: Add this import at the top of views.p
 from datetime import datetime, timedelta
 from decimal import Decimal
 import base64
@@ -9,14 +10,15 @@ from Crypto.Cipher import AES  # Requires: pip install pycryptodome
 from django.conf import settings
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import redirect, render
 from django.utils import timezone  # Ensure this import is at the top of views.py
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 from django.conf import settings
-from .models import Contact
-# Import models cleanly from your app
-from .models import Contact, Order, OrderUpdate, Product, SiteBanner
+from .models import Contact, Order, OrderUpdate, Product
+from django.shortcuts import render
+from .models import SiteBanner
+
+
 
 
 def index(request):
@@ -51,13 +53,34 @@ def index(request):
   return render(request, 'shop/shop.html', params)
 
 
-def about(request):
-  # ONLY grab the banner intended for your about page
-  item = SiteBanner.objects.filter(
-      title__iexact='About us story', is_active=True
-  ).first()
 
-  return render(request, 'shop/about.html', {'item': item})
+
+
+def about(request):
+    try:
+        # First, try to grab the banner explicitly titled 'About us story'
+        item = SiteBanner.objects.filter(
+            title__iexact="About us story", is_active=True
+        ).first()
+
+        # If that specific title doesn't exist, search for any active banner containing 'about'
+        if not item:
+            item = SiteBanner.objects.filter(
+                title__icontains="about", is_active=True
+            ).first()
+
+        # If still nothing is found, pick the first active banner available as a database fallback
+        if not item:
+            item = SiteBanner.objects.filter(is_active=True).first()
+
+    except Exception as e:
+        # If the database query breaks or tables don't exist yet, gracefully catch the error
+        print(f"About page banner query failed: {str(e)}")
+        item = None
+
+    # Pass the item variable to your template context
+    return render(request, "shop/about.html", {"item": item})
+
 
 def contact(request):
     thank = False
@@ -99,45 +122,55 @@ def contact(request):
 
 
 
+
+
+
 def tracker(request):
-  if request.method == 'POST':
-    order_id = request.POST.get('orderId', '').strip()
-    email = request.POST.get('email', '').strip()
+    if request.method == "POST":
+        order_id_raw = request.POST.get("orderId", "")
 
-    try:
-      if order_id and email:
-        order = Order.objects.filter(
-            pk=int(order_id), email__iexact=email
-        ).first()
+        # 2. This completely deletes hidden mobile keyboard space padding characters (\xa0)
+        order_id_clean = re.sub(r"\D", "", order_id_raw)
 
-        if order:
-          updates_qs = OrderUpdate.objects.filter(order_id=order.pk)
-          updates = [
-              {
-                  'text': item.update_desc,
-                  # Localize timestamp to Asia/Karachi before string formatting
-                  'time': timezone.localtime(item.timestamp).strftime(
-                      '%d-%b-%Y %I:%M %p'
-                  ),
-              }
-              for item in updates_qs
-          ]
+        email = request.POST.get("email", "").strip()
 
-          return JsonResponse({
-              'status': 'success',
-              'updates': updates,
-              'itemsJson': order.items_json,
-          })
-        else:
-          return JsonResponse({'status': 'noitem'})
-      else:
-        return JsonResponse({'status': 'empty'})
-    except Exception:
-      return JsonResponse({'status': 'error'})
+        if not order_id_clean or not email:
+            return JsonResponse({"status": "empty"})
 
-  return render(request, 'shop/tracker.html')
+        try:
+            # 3. Safe to parse now that formatting artifacts are scrubbed away
+            order_id = int(order_id_clean)
 
+            order = Order.objects.filter(
+                pk=order_id, email__iexact=email
+            ).first()
 
+            if order:
+                updates_qs = OrderUpdate.objects.filter(order_id=order.pk)
+                updates = [
+                    {
+                        "text": item.update_desc,
+                        "time": timezone.localtime(item.timestamp).strftime(
+                            "%d-%b-%Y %I:%M %p"
+                        ),
+                    }
+                    for item in updates_qs
+                ]
+                return JsonResponse(
+                    {
+                        "status": "success",
+                        "updates": updates,
+                        "itemsJson": order.items_json,
+                    }
+                )
+            else:
+                return JsonResponse({"status": "noitem"})
+
+        except Exception as e:
+            print(f"Tracking crash exception: {str(e)}")
+            return JsonResponse({"status": "error"})
+
+    return render(request, "shop/tracker.html")
 def productView(request, myid):
     # Safely fetch the product
     product = Product.objects.filter(product_id=myid).first()
@@ -179,60 +212,56 @@ def search(request):
 
 
 def checkout(request):
-  if request.method == 'POST':
-    # 1. Extract Order Form Details
-    items_json = request.POST.get('itemsJson', '')
-    name = request.POST.get('name', '')
-    email = request.POST.get('email', '')
-    address = request.POST.get('address', '')
-    city = request.POST.get('city', '')
-    zip_code = request.POST.get('zip_code', '')
-    phone = request.POST.get('phone', '')
+    if request.method == "POST":
+        # 1. Extract Order Form Details
+        items_json = request.POST.get("itemsJson", "")
+        name = request.POST.get("name", "")
+        email = request.POST.get("email", "")
+        address = request.POST.get("address", "")
+        city = request.POST.get("city", "")
+        zip_code = request.POST.get("zip_code", "")
+        phone = request.POST.get("phone", "")
 
-    # 2. Recalculate amount on backend
-    amount = 0.0
-    try:
-      cart_data = json.loads(items_json)
-      for item_id, details in cart_data.items():
-        qty = int(details[0])
-        price = float(details[2])
-        amount += qty * price
-    except (json.JSONDecodeError, KeyError, IndexError, ValueError):
-      raw_amount = request.POST.get('amount', '0')
-      amount = float(raw_amount) if raw_amount else 100.0
+        # 2. Recalculate amount on backend safely matching your cart layout arrays
+        amount = 0.0
+        try:
+            cart_data = json.loads(items_json)
+            for item_id, details in cart_data.items():
+                # details[0] is Qty, details[2] is Price per item
+                qty = int(details[0])
+                price = float(details[2])
+                amount += qty * price
+        except (json.JSONDecodeError, KeyError, IndexError, ValueError):
+            amount = 0.0
 
-    # Shipping charges (250 PKR)
-    delivery_cost = 250.0 if amount > 0 else 0.0
-    total_amount = amount + delivery_cost
+        # 3. Save order to the database
+        order = Order(
+            items_json=items_json,
+            name=name,
+            email=email,
+            address=address,
+            city=city,
+            zip_code=zip_code,
+            phone=phone,
+            amount=amount,
+        )
+        order.save()
 
-    # 3. Save Order in DB
-    order = Order(
-        items_json=items_json,
-        name=name,
-        amount=total_amount,
-        email=email,
-        address=address,
-        city=city,
-        zip_code=zip_code,
-        phone=phone,
-    )
-    order.save()
+        # 4. Add initial order tracking step
+        update = OrderUpdate(
+            order_id=order.order_id,
+            update_desc="The order has been placed successfully.",
+        )
+        update.save()
 
-    # 4. Save Status Update
-    order_update = OrderUpdate(
-        order_id=order.pk,
-        update_desc='Order placed. Awaiting payment confirmation.',
-    )
-    order_update.save()
-    # FIX 1: Return a response for successful POST request
-    return render(
-        request, 'shop/checkout.html', {'thank': True, 'id': order.order_id}
-    )
+        thank = True
+        return render(
+            request,
+            "shop/checkout.html",
+            {"thank": thank, "id": order.order_id},
+        )
 
-    # FIX 2: Return a response for GET requests
-  return render(request, 'shop/checkout.html')
-
-
+    return render(request, "shop/checkout.html")
 
 # ==============================================================================
 # INTEGRATION HELPER FUNCTIONS

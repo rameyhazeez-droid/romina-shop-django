@@ -63,9 +63,14 @@
                 </div>
 <div class="kids-hero-img-box">
     {% if item and item.image %}
+        <!-- This loads your dynamic image whenever you change it in the admin panel -->
         <img src="{{ item.image.url }}" alt="{{ item.title }}" class="img-fluid rounded shadow-sm" loading="lazy">
+    {% else %}
+        <!-- Fallback: This shows a standard image if no banner exists in the admin panel yet -->
+        <img src="{% static 'shop/images/about_placeholder.jpg' %}" alt="About Romina Creation" class="img-fluid rounded shadow-sm" loading="lazy">
     {% endif %}
 </div>
+
             </div>
         </div>
     </section>
