@@ -491,21 +491,34 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    // 1. Cart State & Management
+        // 1. Cart State & Management
     let cart = JSON.parse(localStorage.getItem("cart")) || {};
 
-    // Initialize Bootstrap Popover explicitly using data-bs-toggle
+    // Initialize Bootstrap Popover explicitly
     let popcartElement = document.getElementById("popcart");
     if (popcartElement) {
         new bootstrap.Popover(popcartElement, {
             html: true,
             sanitize: false,
-            trigger: "click", // Use native Bootstrap click toggle behavior
+            trigger: "click",
             content: function () {
                 return getCartPopoverContent();
             },
             placement: "bottom"
         });
+    }
+
+    // Helper function to always fetch a valid > 0 price for a product
+    function getValidPrice(cleanId, buttonEl) {
+        let btnPrice = buttonEl ? parseFloat(buttonEl.getAttribute("data-price")) : 0;
+        if (btnPrice > 0) return btnPrice;
+
+        let priceElem = document.getElementById("pricepr" + cleanId);
+        if (priceElem) {
+            let domPrice = parseFloat(priceElem.innerText.replace(/[^\d.]/g, ""));
+            if (domPrice > 0) return domPrice;
+        }
+        return 0;
     }
 
     document.addEventListener("click", function (e) {
@@ -517,26 +530,30 @@ document.addEventListener("DOMContentLoaded", function () {
             let cleanId = fullId.replace("pr", "");
             let nameElem = document.getElementById("namepr" + cleanId);
             let name = target.getAttribute("data-name") || (nameElem ? nameElem.innerText.trim() : "");
-            let priceAttr = target.getAttribute("data-price");
-            let priceElem = document.getElementById("pricepr" + cleanId);
-            let price = priceAttr ? parseFloat(priceAttr) :
-                        (priceElem ? parseFloat(priceElem.innerText.replace(/[^\d.]/g, "")) : 0);
+            let price = getValidPrice(cleanId, target);
             let cartKey = fullId.startsWith("pr") ? fullId : "pr" + cleanId;
 
             if (cart[cartKey]) {
                 cart[cartKey][0] += 1;
+                if (cart[cartKey][2] <= 0 && price > 0) {
+                    cart[cartKey][2] = price; // Repair any previously saved 0 price
+                }
             } else {
                 cart[cartKey] = [1, name, price];
             }
-            updateCart(true); // pass true to auto-open on add
+            updateCart(true);
         }
 
         // Plus Button (+)
         if (target.classList.contains("plus")) {
             let rawId = target.id.replace("plus", "");
+            let cleanId = rawId.replace("pr", "");
             let cartKey = rawId.startsWith("pr") ? rawId : "pr" + rawId;
             if (cart[cartKey]) {
                 cart[cartKey][0]++;
+                if (cart[cartKey][2] <= 0) {
+                    cart[cartKey][2] = getValidPrice(cleanId, null);
+                }
                 updateCart(true);
             }
         }
@@ -591,9 +608,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 let nameElem = document.getElementById("namepr" + cleanId);
                 let name = nameElem ? nameElem.innerText.trim() : "";
                 let existingBtn = div.querySelector("button");
-                let price = existingBtn && existingBtn.getAttribute("data-price")
-                            ? parseFloat(existingBtn.getAttribute("data-price"))
-                            : (cart[dataId] ? cart[dataId][2] : 0);
+                let price = getValidPrice(cleanId, existingBtn);
 
                 div.innerHTML = `
                     <button id="${dataId}" data-name="${name}" data-price="${price}" class="btn btn-primary btn-sm cart w-100">
