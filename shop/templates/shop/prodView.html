@@ -188,12 +188,21 @@
 
         let fullNameWithAge = `${baseProductName} (${sizeName})`;
 
+        // 1. Store price & name on the parent .divpr wrapper so it persists even when button resets
+        let divContainer = document.querySelector(`.divpr[data-id="${productId}"]`);
+        if (divContainer) {
+            divContainer.setAttribute('data-price', priceVal);
+            divContainer.setAttribute('data-name', fullNameWithAge);
+        }
+
+        // 2. Update the Add to Cart button if currently visible
         let cartBtn = document.getElementById(productId);
         if (cartBtn) {
             cartBtn.setAttribute('data-price', priceVal);
             cartBtn.setAttribute('data-name', fullNameWithAge);
         }
 
+        // 3. Update the product title element on the page
         let nameField = document.getElementById('name' + productId);
         if (nameField) {
             nameField.innerText = fullNameWithAge;
@@ -236,5 +245,4 @@
         currentImageIndex = index;
     }
 </script>
-
 {% endblock %}

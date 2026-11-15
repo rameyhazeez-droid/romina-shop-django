@@ -510,10 +510,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Helper function to always fetch a valid > 0 price for a product
     function getValidPrice(cleanId, buttonEl) {
+        // 1. Check button's data-price
         let btnPrice = buttonEl ? parseFloat(buttonEl.getAttribute("data-price")) : 0;
         if (btnPrice > 0) return btnPrice;
 
-        let priceElem = document.getElementById("pricepr" + cleanId);
+        // 2. Check parent .divpr's data-price (persists on product view page after button reset)
+        let divEl = document.querySelector(`.divpr[data-id="pr${cleanId}"], .divpr[data-id="${cleanId}"]`);
+        if (divEl) {
+            let divPrice = parseFloat(divEl.getAttribute("data-price"));
+            if (divPrice > 0) return divPrice;
+        }
+
+        // 3. Check #pricepr<id> (shop page) OR #current-price-val (product view page)
+        let priceElem = document.getElementById("pricepr" + cleanId) ||
+                        document.getElementById("current-price-val");
         if (priceElem) {
             // Remove "Rs." first, strip non-digits/dots, and remove any leading dots
             let cleanedText = priceElem.innerText
