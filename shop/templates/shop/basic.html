@@ -491,7 +491,7 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-        // 1. Cart State & Management
+    // 1. Cart State & Management
     let cart = JSON.parse(localStorage.getItem("cart")) || {};
 
     // Initialize Bootstrap Popover explicitly
@@ -515,7 +515,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let priceElem = document.getElementById("pricepr" + cleanId);
         if (priceElem) {
-            let domPrice = parseFloat(priceElem.innerText.replace(/[^\d.]/g, ""));
+            // Remove "Rs." first, strip non-digits/dots, and remove any leading dots
+            let cleanedText = priceElem.innerText
+                .replace(/rs\.?/gi, "")
+                .replace(/[^\d.]/g, "")
+                .replace(/^\.+/, "");
+            let domPrice = parseFloat(cleanedText);
             if (domPrice > 0) return domPrice;
         }
         return 0;
@@ -617,7 +622,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 `;
             }
         });
-
         for (let item in cart) {
             totalQty += cart[item][0];
         }
